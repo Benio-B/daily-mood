@@ -15,9 +15,23 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
     return { month: today.getMonth(), year: today.getFullYear() };
   });
   const [viewMode, setViewMode] = useState<'month' | 'year'>('year');
+  const [cols, setCols] = useState(16);
 
   useEffect(() => {
     loadMoods();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 640) setCols(20);
+      else if (width < 1024) setCols(16);
+      else setCols(20);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const loadMoods = async () => {
@@ -91,7 +105,6 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
 
   const YearView = () => {
     const currentYear = displayMonth.year;
-    const COLS = 20;
 
     const getAllYearDays = () => {
       const allDays = [];
@@ -124,7 +137,7 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
           </button>
         </div>
         <div className="flex justify-center">
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))`, gap: 0 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(8px, 1fr))`, gap: '0', width: '100%', minWidth: '100%' }}>
             {yearDays.map(({ day, month, year }, index) => {
               const mood = getMoodForDate(day, month, year);
               const today = new Date();
@@ -137,8 +150,8 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
                 <div
                   key={`${month}-${day}`}
                   style={{
-                    width: '50px',
-                    height: '40px',
+                    width: '100%',
+                    aspectRatio: '1',
                     backgroundColor: mood ? getMoodColor(mood.mood_type) : '#e5e7eb'
                   }}
                   title={mood ? `${day} ${monthNames[month]}: ${getMoodLabel(mood.mood_type)}` : `${day} ${monthNames[month]}`}
@@ -224,18 +237,18 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
           <span>Retour</span>
         </button>
 
-        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <CalendarIcon size={32} className="text-blue-600" />
-              <h2 className="text-3xl font-bold text-gray-800">
+        <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CalendarIcon size={28} className="text-blue-600" />
+              <h2 className="text-2xl font-bold text-gray-800">
                 {viewMode === 'month' ? `${monthNames[displayMonth.month]} ${displayMonth.year}` : 'Historique'}
               </h2>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setViewMode('year')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-3 py-1 text-sm rounded-lg font-medium transition-colors ${
                   viewMode === 'year'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -245,7 +258,7 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
               </button>
               <button
                 onClick={() => setViewMode('month')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`px-3 py-1 text-sm rounded-lg font-medium transition-colors ${
                   viewMode === 'month'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -258,24 +271,24 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
 
           {viewMode === 'year' ? <YearView /> : <MonthView />}
 
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Légende</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="mt-4 pt-3 border-t border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2">Légende</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded" style={{ backgroundColor: '#22c55e' }} />
-                <span className="text-sm text-gray-700">Trop bien</span>
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#22c55e' }} />
+                <span className="text-xs text-gray-700">Trop bien</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded" style={{ backgroundColor: '#eab308' }} />
-                <span className="text-sm text-gray-700">Bien</span>
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#eab308' }} />
+                <span className="text-xs text-gray-700">Bien</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded" style={{ backgroundColor: '#ef4444' }} />
-                <span className="text-sm text-gray-700">Bof</span>
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ef4444' }} />
+                <span className="text-xs text-gray-700">Bof</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded" style={{ backgroundColor: '#000000' }} />
-                <span className="text-sm text-gray-700">Un cauchemar</span>
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#000000' }} />
+                <span className="text-xs text-gray-700">Un cauchemar</span>
               </div>
             </div>
           </div>
