@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Mood } from '../lib/supabase';
-import { getMoods, getMoodColor, getMoodLabel } from '../lib/moods';
+import type { Mood, MoodType } from '../lib/supabase';
+import { getMoods, getMoodColor, getMoodLabel, saveMood } from '../lib/moods';
+import { MoodEditModal } from './MoodEditModal';
 
 interface MoodCalendarProps {
   onBack: () => void;
@@ -16,6 +17,7 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
   });
   const [viewMode, setViewMode] = useState<'month' | 'year'>('year');
   const [cols, setCols] = useState(16);
+  const [editingDate, setEditingDate] = useState<string | null>(null);
 
   useEffect(() => {
     loadMoods();
@@ -68,6 +70,30 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
   const getMoodForDate = (day: number, month: number, year: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return moods.find(mood => mood.date === dateStr);
+  };
+
+  const isWithinEditWindow = (day: number, month: number, year: number) => {
+    const targetDate = new Date(year, month, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    targetDate.setHours(0, 0, 0, 0);
+    const diffTime = today.getTime() - targetDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 7;
+  };
+
+  const handleDateClick = (day: number, month: number, year: number) => {
+    if (isWithinEditWindow(day, month, year)) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      setEditingDate(dateStr);
+    }
+  };
+
+  const handleSaveMood = async (moodType: MoodType) => {
+    if (!editingDate) return;
+    await saveMood(editingDate, moodType);
+    const updatedMoods = await getMoods();
+    setMoods(updatedMoods);
   };
 
   const previousMonth = () => {
@@ -145,16 +171,21 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
                 day === today.getDate() &&
                 month === today.getMonth() &&
                 year === today.getFullYear();
+              const canEdit = isWithinEditWindow(day, month, year);
 
               return (
                 <div
                   key={`${month}-${day}`}
+                  onClick={() => handleDateClick(day, month, year)}
                   style={{
                     width: '100%',
                     aspectRatio: '1',
-                    backgroundColor: mood ? getMoodColor(mood.mood_type) : '#e5e7eb'
+                    backgroundColor: mood ? getMoodColor(mood.mood_type) : '#e5e7eb',
+                    cursor: canEdit ? 'pointer' : 'default',
+                    opacity: canEdit ? 1 : 0.7
                   }}
                   title={mood ? `${day} ${monthNames[month]}: ${getMoodLabel(mood.mood_type)}` : `${day} ${monthNames[month]}`}
+                  className={canEdit ? 'hover:opacity-80 transition-opacity' : ''}
                 />
               );
             })}
@@ -228,6 +259,18 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 py-8">
+      {editingDate && (
+        <MoodEditModal
+          date={editingDate}
+          onClose={() => setEditingDate(null)}
+          onSave={handleSaveMood}
+          currentMood={getMoodForDate(
+            parseInt(editingDate.split('-')[2]),
+            parseInt(editingDate.split('-')[1]) - 1,
+            parseInt(editingDate.split('-')[0])
+          )?.mood_type}
+        />
+      )}
       <div className="max-w-6xl mx-auto">
         <button
           onClick={onBack}
