@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Smile, Meh, Frown, Skull, Calendar } from 'lucide-react';
 import type { MoodType } from '../lib/supabase';
 
 interface MoodSelectorProps {
-  onMoodSelect: (mood: MoodType) => void;
+  onMoodSelect: (mood: MoodType, hadBreakfast: boolean) => void;
   onViewCalendar: () => void;
 }
 
 export function MoodSelector({ onMoodSelect, onViewCalendar }: MoodSelectorProps) {
+  const [hadBreakfast, setHadBreakfast] = useState(false);
   const moods: Array<{ type: MoodType; label: string; icon: typeof Smile; color: string }> = [
     { type: 'trop_bien', label: 'Trop bien', icon: Smile, color: 'bg-green-500 hover:bg-green-600' },
     { type: 'bien', label: 'Bien', icon: Smile, color: 'bg-yellow-500 hover:bg-yellow-600' },
@@ -28,7 +30,7 @@ export function MoodSelector({ onMoodSelect, onViewCalendar }: MoodSelectorProps
           {moods.map(({ type, label, icon: Icon, color }) => (
             <button
               key={type}
-              onClick={() => onMoodSelect(type)}
+              onClick={() => onMoodSelect(type, hadBreakfast)}
               className={`${color} text-white rounded-xl p-6 flex flex-col items-center justify-center gap-3 transition-all transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg`}
             >
               <Icon size={48} strokeWidth={2} />
@@ -36,6 +38,18 @@ export function MoodSelector({ onMoodSelect, onViewCalendar }: MoodSelectorProps
             </button>
           ))}
         </div>
+
+        <label className="block bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6 cursor-pointer hover:border-blue-300 hover:bg-blue-100 transition-colors">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              checked={hadBreakfast}
+              onChange={(e) => setHadBreakfast(e.target.checked)}
+              className="w-6 h-6 text-blue-600 rounded cursor-pointer"
+            />
+            <span className="text-gray-800 font-semibold text-lg">As-tu pris ton petit déjeuner?</span>
+          </div>
+        </label>
 
         <button
           onClick={onViewCalendar}

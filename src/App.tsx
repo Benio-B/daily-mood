@@ -8,11 +8,11 @@ function App() {
   const [view, setView] = useState<'selector' | 'calendar'>('selector');
   const [saving, setSaving] = useState(false);
 
-  const handleMoodSelect = async (mood: MoodType) => {
+  const handleMoodSelect = async (mood: MoodType, hadBreakfast: boolean) => {
     setSaving(true);
     try {
       const today = new Date().toISOString().split('T')[0];
-      await saveMood(today, mood);
+      await saveMood(today, mood, hadBreakfast);
       setView('calendar');
     } catch (error) {
       console.error('Error saving mood:', error);

@@ -11,6 +11,7 @@ export interface Mood {
   id: string;
   date: string;
   mood_type: MoodType;
+  had_breakfast: boolean;
   created_at: string;
   updated_at: string;
 }

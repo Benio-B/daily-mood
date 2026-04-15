@@ -5,13 +5,15 @@ import type { MoodType } from '../lib/supabase';
 interface MoodEditModalProps {
   date: string;
   onClose: () => void;
-  onSave: (moodType: MoodType) => Promise<void>;
+  onSave: (moodType: MoodType, hadBreakfast: boolean) => Promise<void>;
   currentMood?: MoodType;
+  currentBreakfast?: boolean;
 }
 
-export function MoodEditModal({ date, onClose, onSave, currentMood }: MoodEditModalProps) {
+export function MoodEditModal({ date, onClose, onSave, currentMood, currentBreakfast }: MoodEditModalProps) {
   const [verified, setVerified] = useState(false);
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(currentMood || null);
+  const [hadBreakfast, setHadBreakfast] = useState(currentBreakfast || false);
   const [answer, setAnswer] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -37,7 +39,7 @@ export function MoodEditModal({ date, onClose, onSave, currentMood }: MoodEditMo
     if (!selectedMood) return;
     setSaving(true);
     try {
-      await onSave(selectedMood);
+      await onSave(selectedMood, hadBreakfast);
       onClose();
     } catch (error) {
       console.error('Error saving mood:', error);
@@ -111,6 +113,16 @@ export function MoodEditModal({ date, onClose, onSave, currentMood }: MoodEditMo
                 </button>
               ))}
             </div>
+
+            <label className="flex items-center gap-3 bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={hadBreakfast}
+                onChange={(e) => setHadBreakfast(e.target.checked)}
+                className="w-5 h-5 text-blue-600 rounded cursor-pointer"
+              />
+              <span className="text-gray-800 font-medium">As-tu pris ton petit déjeuner?</span>
+            </label>
 
             <div className="flex gap-3">
               <button
