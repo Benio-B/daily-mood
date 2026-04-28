@@ -89,9 +89,9 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
     }
   };
 
-  const handleSaveMood = async (moodType: MoodType, hadBreakfast: boolean) => {
+  const handleSaveMood = async (moodType: MoodType, hadBreakfast: boolean, why: string) => {
     if (!editingDate) return;
-    await saveMood(editingDate, moodType, hadBreakfast);
+    await saveMood(editingDate, moodType, hadBreakfast, why);
     const updatedMoods = await getMoods();
     setMoods(updatedMoods);
   };
@@ -274,6 +274,11 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
             parseInt(editingDate.split('-')[1]) - 1,
             parseInt(editingDate.split('-')[0])
           )?.had_breakfast}
+          currentWhy={getMoodForDate(
+            parseInt(editingDate.split('-')[2]),
+            parseInt(editingDate.split('-')[1]) - 1,
+            parseInt(editingDate.split('-')[0])
+          )?.why}
         />
       )}
       <div className="max-w-6xl mx-auto">

@@ -3,12 +3,13 @@ import { Smile, Meh, Frown, Skull, Calendar } from 'lucide-react';
 import type { MoodType } from '../lib/supabase';
 
 interface MoodSelectorProps {
-  onMoodSelect: (mood: MoodType, hadBreakfast: boolean) => void;
+  onMoodSelect: (mood: MoodType, hadBreakfast: boolean, why: string) => void;
   onViewCalendar: () => void;
 }
 
 export function MoodSelector({ onMoodSelect, onViewCalendar }: MoodSelectorProps) {
   const [hadBreakfast, setHadBreakfast] = useState(false);
+  const [why, setWhy] = useState('');
   const moods: Array<{ type: MoodType; label: string; icon: typeof Smile; color: string }> = [
     { type: 'trop_bien', label: 'Trop bien', icon: Smile, color: 'bg-green-500 hover:bg-green-600' },
     { type: 'bien', label: 'Bien', icon: Smile, color: 'bg-yellow-500 hover:bg-yellow-600' },
@@ -30,7 +31,7 @@ export function MoodSelector({ onMoodSelect, onViewCalendar }: MoodSelectorProps
           {moods.map(({ type, label, icon: Icon, color }) => (
             <button
               key={type}
-              onClick={() => onMoodSelect(type, hadBreakfast)}
+              onClick={() => onMoodSelect(type, hadBreakfast, why)}
               className={`${color} text-white rounded-xl p-6 flex flex-col items-center justify-center gap-3 transition-all transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg`}
             >
               <Icon size={48} strokeWidth={2} />
@@ -39,7 +40,7 @@ export function MoodSelector({ onMoodSelect, onViewCalendar }: MoodSelectorProps
           ))}
         </div>
 
-        <label className="block bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6 cursor-pointer hover:border-blue-300 hover:bg-blue-100 transition-colors">
+        <label className="block bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4 cursor-pointer hover:border-blue-300 hover:bg-blue-100 transition-colors">
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -50,6 +51,17 @@ export function MoodSelector({ onMoodSelect, onViewCalendar }: MoodSelectorProps
             <span className="text-gray-800 font-semibold text-lg">As-tu pris ton petit déjeuner?</span>
           </div>
         </label>
+
+        <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-2">
+          <label className="block text-gray-800 font-semibold text-sm">Pourquoi? ({why.length}/200)</label>
+          <textarea
+            value={why}
+            onChange={(e) => setWhy(e.target.value.slice(0, 200))}
+            placeholder="Explique en quelques mots ton choix..."
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+            rows={3}
+          />
+        </div>
 
         <button
           onClick={onViewCalendar}

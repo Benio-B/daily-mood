@@ -1,12 +1,13 @@
 import { supabase, type MoodType, type Mood } from './supabase';
 
-export async function saveMood(date: string, moodType: MoodType, hadBreakfast: boolean): Promise<void> {
+export async function saveMood(date: string, moodType: MoodType, hadBreakfast: boolean, why: string): Promise<void> {
   const { error } = await supabase
     .from('moods')
     .upsert({
       date,
       mood_type: moodType,
       had_breakfast: hadBreakfast,
+      why,
       updated_at: new Date().toISOString()
     }, {
       onConflict: 'date'

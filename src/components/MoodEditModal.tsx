@@ -5,15 +5,17 @@ import type { MoodType } from '../lib/supabase';
 interface MoodEditModalProps {
   date: string;
   onClose: () => void;
-  onSave: (moodType: MoodType, hadBreakfast: boolean) => Promise<void>;
+  onSave: (moodType: MoodType, hadBreakfast: boolean, why: string) => Promise<void>;
   currentMood?: MoodType;
   currentBreakfast?: boolean;
+  currentWhy?: string;
 }
 
-export function MoodEditModal({ date, onClose, onSave, currentMood, currentBreakfast }: MoodEditModalProps) {
+export function MoodEditModal({ date, onClose, onSave, currentMood, currentBreakfast, currentWhy }: MoodEditModalProps) {
   const [verified, setVerified] = useState(false);
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(currentMood || null);
   const [hadBreakfast, setHadBreakfast] = useState(currentBreakfast || false);
+  const [why, setWhy] = useState(currentWhy || '');
   const [answer, setAnswer] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -39,7 +41,7 @@ export function MoodEditModal({ date, onClose, onSave, currentMood, currentBreak
     if (!selectedMood) return;
     setSaving(true);
     try {
-      await onSave(selectedMood, hadBreakfast);
+      await onSave(selectedMood, hadBreakfast, why);
       onClose();
     } catch (error) {
       console.error('Error saving mood:', error);
@@ -123,6 +125,17 @@ export function MoodEditModal({ date, onClose, onSave, currentMood, currentBreak
               />
               <span className="text-gray-800 font-medium">As-tu pris ton petit déjeuner?</span>
             </label>
+
+            <div className="space-y-2">
+              <label className="block text-gray-800 font-medium text-sm">Pourquoi? ({why.length}/200)</label>
+              <textarea
+                value={why}
+                onChange={(e) => setWhy(e.target.value.slice(0, 200))}
+                placeholder="Explique en quelques mots ton choix..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                rows={3}
+              />
+            </div>
 
             <div className="flex gap-3">
               <button
