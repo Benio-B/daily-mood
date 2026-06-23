@@ -127,10 +127,10 @@ export function MoodEditModal({ date, onClose, onSave, currentMood, currentBreak
             </label>
 
             <div className="space-y-2">
-              <label className="block text-gray-800 font-medium text-sm">Pourquoi? ({why.length}/200)</label>
+              <label className="block text-gray-800 font-medium text-sm">Pourquoi? ({why.length}/500)</label>
               <textarea
                 value={why}
-                onChange={(e) => setWhy(e.target.value.slice(0, 200))}
+                onChange={(e) => setWhy(e.target.value.slice(0, 500))}
                 placeholder="Explique en quelques mots ton choix..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
                 rows={3}

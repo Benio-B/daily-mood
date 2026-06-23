@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import type { Mood, MoodType } from '../lib/supabase';
 import { getMoods, getMoodColor, getMoodLabel, saveMood } from '../lib/moods';
 import { MoodEditModal } from './MoodEditModal';
@@ -112,6 +112,29 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
       }
       return { month: prev.month + 1, year: prev.year };
     });
+  };
+
+  const dayNamesLong = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+
+  const exportTxt = () => {
+    const sorted = [...moods].sort((a, b) => a.date.localeCompare(b.date));
+    const lines = sorted.map(mood => {
+      const [year, month, day] = mood.date.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      const dayName = dayNamesLong[date.getDay()];
+      const monthName = monthNames[month - 1].toLowerCase();
+      const label = getMoodLabel(mood.mood_type);
+      const breakfast = mood.had_breakfast ? 'true' : 'false';
+      const why = mood.why || '';
+      return `${dayName} ${day} ${monthName} ${year} ; ${label} ; ${breakfast} ; ${why}`;
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'humeurs.txt';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const { days } = generateCalendar(displayMonth.month, displayMonth.year);
@@ -298,7 +321,15 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
                 {viewMode === 'month' ? `${monthNames[displayMonth.month]} ${displayMonth.year}` : 'Historique'}
               </h2>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <button
+                onClick={exportTxt}
+                className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                title="Exporter en .txt"
+              >
+                <Download size={15} />
+                Exporter
+              </button>
               <button
                 onClick={() => setViewMode('year')}
                 className={`px-3 py-1 text-sm rounded-lg font-medium transition-colors ${
