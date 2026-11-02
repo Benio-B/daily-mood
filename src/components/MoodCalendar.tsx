@@ -3,12 +3,16 @@ import { ArrowLeft, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Downloa
 import type { Mood, MoodType } from '../lib/supabase';
 import { getMoods, getMoodColor, getMoodLabel, saveMood } from '../lib/moods';
 import { MoodEditModal } from './MoodEditModal';
+import type { LifestyleState } from './LifestyleFields';
+import { ThemeToggle } from './ThemeToggle';
 
 interface MoodCalendarProps {
   onBack: () => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
-export function MoodCalendar({ onBack }: MoodCalendarProps) {
+export function MoodCalendar({ onBack, theme, onToggleTheme }: MoodCalendarProps) {
   const [moods, setMoods] = useState<Mood[]>([]);
   const [loading, setLoading] = useState(true);
   const [displayMonth, setDisplayMonth] = useState(() => {
@@ -89,9 +93,17 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
     }
   };
 
-  const handleSaveMood = async (moodType: MoodType, hadBreakfast: boolean, why: string) => {
+  const handleSaveMood = async (moodType: MoodType, lifestyle: LifestyleState, why: string) => {
     if (!editingDate) return;
-    await saveMood(editingDate, moodType, hadBreakfast, why);
+    await saveMood(editingDate, {
+      moodType,
+      hadBreakfast: lifestyle.hadBreakfast,
+      why,
+      cigarettes: lifestyle.cigarettes,
+      drinksOfficial: lifestyle.drinksOfficial,
+      drinksUnofficial: lifestyle.drinksUnofficial,
+      sleepQuality: lifestyle.sleepQuality,
+    });
     const updatedMoods = await getMoods();
     setMoods(updatedMoods);
   };
@@ -146,8 +158,8 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-gray-600">Chargement...</div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-gray-600 dark:text-gray-300">Chargement...</div>
       </div>
     );
   }
@@ -225,16 +237,16 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
         <div className="flex items-center justify-between">
           <button
             onClick={previousMonth}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-200"
           >
             <ChevronLeft size={24} />
           </button>
-          <h3 className="text-2xl font-bold text-gray-800">
+          <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
             {monthNames[displayMonth.month]} {displayMonth.year}
           </h3>
           <button
             onClick={nextMonth}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-200"
           >
             <ChevronRight size={24} />
           </button>
@@ -242,7 +254,7 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
 
         <div className="grid grid-cols-7 gap-2 mb-3">
           {dayNames.map(day => (
-            <div key={day} className="text-center text-sm font-semibold text-gray-600 py-2">
+            <div key={day} className="text-center text-sm font-semibold text-gray-600 dark:text-gray-400 py-2">
               {day}
             </div>
           ))}
@@ -281,50 +293,49 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 py-8">
-      {editingDate && (
-        <MoodEditModal
-          date={editingDate}
-          onClose={() => setEditingDate(null)}
-          onSave={handleSaveMood}
-          currentMood={getMoodForDate(
-            parseInt(editingDate.split('-')[2]),
-            parseInt(editingDate.split('-')[1]) - 1,
-            parseInt(editingDate.split('-')[0])
-          )?.mood_type}
-          currentBreakfast={getMoodForDate(
-            parseInt(editingDate.split('-')[2]),
-            parseInt(editingDate.split('-')[1]) - 1,
-            parseInt(editingDate.split('-')[0])
-          )?.had_breakfast}
-          currentWhy={getMoodForDate(
-            parseInt(editingDate.split('-')[2]),
-            parseInt(editingDate.split('-')[1]) - 1,
-            parseInt(editingDate.split('-')[0])
-          )?.why}
-        />
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4 py-8">
+      {editingDate && (() => {
+        const [y, m, d] = editingDate.split('-').map((v, i) => i === 1 ? parseInt(v) - 1 : parseInt(v));
+        const mood = getMoodForDate(d, m, y);
+        return (
+          <MoodEditModal
+            date={editingDate}
+            onClose={() => setEditingDate(null)}
+            onSave={handleSaveMood}
+            currentMood={mood?.mood_type}
+            currentBreakfast={mood?.had_breakfast}
+            currentWhy={mood?.why}
+            currentCigarettes={mood?.cigarettes}
+            currentDrinksOfficial={mood?.drinks_official}
+            currentDrinksUnofficial={mood?.drinks_unofficial}
+            currentSleepQuality={mood?.sleep_quality}
+          />
+        );
+      })()}
       <div className="max-w-6xl mx-auto">
-        <button
-          onClick={onBack}
-          className="mb-6 flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft size={20} />
-          <span>Retour</span>
-        </button>
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span>Retour</span>
+          </button>
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+        </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 md:p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <CalendarIcon size={28} className="text-blue-600" />
-              <h2 className="text-2xl font-bold text-gray-800">
+              <CalendarIcon size={28} className="text-blue-600 dark:text-blue-400" />
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
                 {viewMode === 'month' ? `${monthNames[displayMonth.month]} ${displayMonth.year}` : 'Historique'}
               </h2>
             </div>
             <div className="flex gap-2 items-center">
               <button
                 onClick={exportTxt}
-                className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1 text-sm rounded-lg font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 title="Exporter en .txt"
               >
                 <Download size={15} />
@@ -335,7 +346,7 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
                 className={`px-3 py-1 text-sm rounded-lg font-medium transition-colors ${
                   viewMode === 'year'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 Année
@@ -345,7 +356,7 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
                 className={`px-3 py-1 text-sm rounded-lg font-medium transition-colors ${
                   viewMode === 'month'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 Mois
@@ -355,24 +366,24 @@ export function MoodCalendar({ onBack }: MoodCalendarProps) {
 
           {viewMode === 'year' ? <YearView /> : <MonthView />}
 
-          <div className="mt-4 pt-3 border-t border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2">Légende</h3>
+          <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">Légende</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#22c55e' }} />
-                <span className="text-xs text-gray-700">Trop bien</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">Trop bien</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#eab308' }} />
-                <span className="text-xs text-gray-700">Bien</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">Bien</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ef4444' }} />
-                <span className="text-xs text-gray-700">Bof</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">Bof</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: '#000000' }} />
-                <span className="text-xs text-gray-700">Un cauchemar</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300">Un cauchemar</span>
               </div>
             </div>
           </div>

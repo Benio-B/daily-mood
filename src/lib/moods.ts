@@ -1,13 +1,27 @@
-import { supabase, type MoodType, type Mood } from './supabase';
+import { supabase, type MoodType, type Mood, type SleepQuality } from './supabase';
 
-export async function saveMood(date: string, moodType: MoodType, hadBreakfast: boolean, why: string): Promise<void> {
+export interface MoodEntry {
+  moodType: MoodType;
+  hadBreakfast: boolean;
+  why: string;
+  cigarettes: number;
+  drinksOfficial: number;
+  drinksUnofficial: number;
+  sleepQuality: SleepQuality;
+}
+
+export async function saveMood(date: string, entry: MoodEntry): Promise<void> {
   const { error } = await supabase
     .from('moods')
     .upsert({
       date,
-      mood_type: moodType,
-      had_breakfast: hadBreakfast,
-      why,
+      mood_type: entry.moodType,
+      had_breakfast: entry.hadBreakfast,
+      why: entry.why,
+      cigarettes: entry.cigarettes,
+      drinks_official: entry.drinksOfficial,
+      drinks_unofficial: entry.drinksUnofficial,
+      sleep_quality: entry.sleepQuality,
       updated_at: new Date().toISOString()
     }, {
       onConflict: 'date'
