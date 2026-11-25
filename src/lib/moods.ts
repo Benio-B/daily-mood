@@ -1,7 +1,7 @@
 import { supabase, type MoodType, type Mood, type SleepQuality } from './supabase';
 
 export interface MoodEntry {
-  moodType: MoodType;
+  moodType: MoodType | null;
   hadBreakfast: boolean;
   why: string;
   cigarettes: number;
@@ -30,6 +30,20 @@ export async function saveMood(date: string, entry: MoodEntry): Promise<void> {
   if (error) {
     throw error;
   }
+}
+
+export async function getMoodByDate(date: string): Promise<Mood | null> {
+  const { data, error } = await supabase
+    .from('moods')
+    .select('*')
+    .eq('date', date)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 }
 
 export async function getMoods(): Promise<Mood[]> {

@@ -11,7 +11,7 @@ export type SleepQuality = '' | 'pas_ouf' | 'mieux' | 'bien' | 'super_bien';
 export interface Mood {
   id: string;
   date: string;
-  mood_type: MoodType;
+  mood_type: MoodType | null;
   had_breakfast: boolean;
   why: string;
   cigarettes: number;
