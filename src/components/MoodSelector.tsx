@@ -105,12 +105,11 @@ export function MoodSelector({ onViewCalendar, theme, onToggleTheme }: MoodSelec
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-2xl w-full relative">
-        <div className="absolute top-4 right-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 max-w-2xl w-full">
+        <div className="flex items-center justify-between mb-2">
+          <SaveIndicator status={saveStatus} />
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
-
-        <SaveIndicator status={saveStatus} />
 
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-3 text-center">
           Comment s'est passée ta journée ?
@@ -160,7 +159,7 @@ export function MoodSelector({ onViewCalendar, theme, onToggleTheme }: MoodSelec
 }
 
 function SaveIndicator({ status }: { status: SaveStatus }) {
-  if (status === 'idle') return null;
+  if (status === 'idle') return <div />;
 
   const config = {
     saving: { icon: Loader2, text: 'Enregistrement...', className: 'text-blue-600 dark:text-blue-400', spin: true },
@@ -171,7 +170,7 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
   const Icon = config.icon;
 
   return (
-    <div className={`absolute top-4 left-4 flex items-center gap-1.5 text-sm font-medium ${config.className}`}>
+    <div className={`flex items-center gap-1.5 text-sm font-medium ${config.className}`}>
       <Icon size={16} className={config.spin ? 'animate-spin' : ''} />
       <span>{config.text}</span>
     </div>
